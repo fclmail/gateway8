@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay with USDC (Polygon)</title>
+    <style>
+        body {
+            background-color: #001f3d; /* Dark blue background */
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #00ffcc; /* Light cyan heading color */
+            text-shadow: 2px 2px 5px #000000;
+        }
+
+        select, button, input {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #00ffcc; /* Button color */
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #33ffcc;
+        }
+
+        .form-container {
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            width: 50%;
+            margin: auto;
+        }
+
+        .dropdown {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #00ffcc;
+            font-size: 18px;
+            width: 200px;
+        }
+
+        input {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #00ffcc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Pay with USDC (Polygon Network)</h1>
+
+    <div class="form-container">
+        <!-- Dropdown menu for price options -->
+        <label for="price">Select Price: </label>
+        <select id="price" class="dropdown">
+            <option value="0.01">USDC $0.01</option>
+            <option value="200">USDC $200</option>
+            <option value="1000">USDC $1000</option>
+        </select>
+        <br>
+
+        <!-- Button to trigger MetaMask payment -->
+        <button id="payButton">Pay with USDC</button>
+        <br>
+
+        <!-- Section to enter sender's wallet address -->
+        <input type="text" id="senderAddress" placeholder="Enter your wallet address" />
+        <button id="sendEmailButton">Send Address to Email</button>
+    </div>
+
+    <!-- Script to interact with MetaMask and USDC contract -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.6.9/dist/ethers.umd.min.js"></script>
+    <script>
+        // USDC Token Address on Polygon
+        const USDC_ADDRESS = "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359";
+
+        // Wallet to receive payments
+        const RECEIVER_ADDRESS = "0x2Ee934331C771F0f5901314226375F469e7CeceC";
+
+        // Function to check MetaMask installation
+        function checkMetaMask() {
+            if (typeof window.ethereum !== 'undefined') {
+                console.log('MetaMask is installed');
+            } else {
+                alert('Please install MetaMask to proceed.');
+            }
+        }
+
+        // Function to handle payment in USDC
+        async function payWithUSDC() {
+            if (typeof window.ethereum !== 'undefined') {
+                const provider = new ethers.providers.Web3Provider(window.ethereum);
+                const signer = provider.getSigner();
+
+                // Get the selected price from dropdown
+                const price = document.getElementById('price').value;
+                const amountInUSDC = ethers.utils.parseUnits(price, 6); // USDC uses 6 decimal places
+
+                try {
+                    // Request user account access
+                    await window.ethereum.request({ method: 'eth_requestAccounts' });
+
+                    // Create a contract instance for USDC
+                    const usdcContract = new ethers.Contract(
+                        USDC_ADDRESS,
+                        [
+                            "function transfer(address to, uint256 amount) public returns (bool)"
+                        ],
+                        signer
+                    );
+
+                    // Send USDC tokens
+                    const tx = await usdcContract.transfer(RECEIVER_ADDRESS, amountInUSDC);
+                    console.log('Transaction sent:', tx);
+                    alert(`Transaction successful! You sent ${price} USDC.`);
+                } catch (error) {
+                    console.error('Error sending transaction:', error);
+                    alert('Transaction failed. Please try again.');
+                }
+            } else {
+                alert('MetaMask is not installed. Please install it and try again.');
+            }
+        }
+
+        // Function to send wallet address to email
+        function sendWalletAddressToEmail() {
+            const walletAddress = document.getElementById('senderAddress').value;
+            if (walletAddress) {
+                // Placeholder for email sending functionality (requires backend to work)
+                console.log(`Wallet Address to be emailed: ${walletAddress}`);
+                
+                alert(`Wallet address will be sent to cashcoin@gmail.com!`);
+            } else {
+                alert('Please enter a wallet address.');
+            }
+        }
+
+        // Add event listeners to buttons
+        document.getElementById('payButton').addEventListener('click', payWithUSDC);
+        document.getElementById('sendEmailButton').addEventListener('click', sendWalletAddressToEmail);
+
+        // Check MetaMask installation
+        checkMetaMask();
+    </script>
+</body>
+</html>
